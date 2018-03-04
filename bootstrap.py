@@ -95,6 +95,9 @@ def command_init(args):
                     '-DCMAKE_C_COMPILER={0}'.format(a),
                     '-DCMAKE_CXX_COMPILER=clang++{0}'.format(a[5:]),
                 ]
+            elif a.startswith('test-install'):
+                a = '-DCMAKE_INSTALL_PREFIX={0}'.format(
+                    os.path.join(os.getcwd(), '_test_install_prefix'))
             else:
                 args.error('unknown keyword: {0}'.format(a))
 
