@@ -61,11 +61,18 @@ def set_default_subparser(self, name, args=None):
 argparse.ArgumentParser.set_default_subparser = set_default_subparser
 
 
-def run(args, verbose=False):
+def run(args, verbose=False, ignore_error=False):
     """Run an external command."""
     if verbose:
         print('Running {0}'.format(' '.join(args)))
-    subprocess.call(args)
+    if ignore_error:
+        with open(os.devnull, 'w') as devnull:
+            subprocess.call(args, stderr=devnull)
+    else:
+        try:
+            subprocess.check_call(args)
+        except subprocess.CalledProcessError:
+            exit(1)
 
 
 def command_init(args):
@@ -97,11 +104,19 @@ def command_init(args):
             cmake_args.append(a)
 
     cmake_src_dir = os.path.dirname(__file__)
+
+    run(['git', '-C', cmake_src_dir, 'submodule', 'update', '--init'],
+        verbose=args.verbose)
+
+    if args.verbose:
+        cmake_args.insert(0, '-L')
     run(['cmake'] + cmake_args + [cmake_src_dir], verbose=args.verbose)
 
 
 def command_clean(args):
-    """Clean up the directory."""
+    """Clean up the working directory."""
+    run(['git', 'submodule', 'deinit', '.'], verbose=args.verbose,
+        ignore_error=True)
     run(['git', 'clean', '-dfX'], verbose=args.verbose)
 
 
@@ -128,7 +143,7 @@ def main():
 
     parser_clean = subparsers.add_parser(
         'clean',
-        help='clean up the directory'
+        help='clean up the working directory'
     )
     parser_clean.set_defaults(handler=command_clean)
     parser_clean.add_argument(
