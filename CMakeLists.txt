@@ -14,3 +14,4 @@ add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure)
 
 add_subdirectory(src)
 add_subdirectory(tests EXCLUDE_FROM_ALL)
+add_subdirectory(benchmarks EXCLUDE_FROM_ALL)
