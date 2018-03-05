@@ -156,6 +156,26 @@ def command_clean(args):
 
 def command_ci_lint(args):
     """Run linters for CI."""
+    subcommands = []
+
+    for a in args.args:
+        if a.lower() == 'cpp':
+            if 'cpp' not in subcommands:
+                subcommands.append('cpp')
+        elif a.lower() == 'python':
+            if 'python' not in subcommands:
+                subcommands.append('python')
+        else:
+            args.error('unknown keyword: {0}'.format(a))
+
+    if not subcommands:
+        subcommands.append('cpp')
+
+    for cmd in subcommands:
+        globals()['_command_ci_lint_' + cmd](args)
+
+
+def _command_ci_lint_cpp(args):
     # Assume the repository has no changes. Run clang-format and then check
     # git diff.
     root_dir = get_root_dir()
@@ -172,6 +192,10 @@ def command_ci_lint(args):
                  verbose=args.verbose, without_check=True)
     if status != 0:
         exit(status)
+
+
+def _command_ci_lint_python(args):
+    run(['flake8'], verbose=args.verbose)
 
 
 def command_ci_test(args):
@@ -246,6 +270,11 @@ def main():
         '-v', '--verbose',
         action='store_true',
         help='verbose output',
+    )
+    parser_ci_lint.add_argument(
+        'args',
+        nargs='*',
+        help=argparse.SUPPRESS,
     )
 
     parser_ci_test = subparsers.add_parser(

@@ -7,6 +7,15 @@ test-lint:
   script:
     - ./bootstrap.py ci-lint -v
 
+test-lint-script:
+  image: ubuntu:xenial
+  before_script:
+    - apt-get update -qq
+    - apt-get install -y -qq cmake g++ git python3 python3-pip
+    - pip3 install flake8 flake8_docstrings pep8-naming flake8-import-order flake8-bugbear
+  script:
+    - python3 bootstrap.py ci-lint python -v
+
 test-gcc:
   image: ubuntu:xenial
   before_script:
