@@ -112,6 +112,10 @@ def command_init(args):
                 a = '-DCMAKE_BUILD_TYPE=Debug'
             elif a.lower() == 'release':
                 a = '-DCMAKE_BUILD_TYPE=Release'
+            elif a.lower() == 'native':
+                a = '-DENABLE_NATIVE=ON'
+            elif a.lower() == 'nonative':
+                a = '-DENABLE_NATIVE=OFF'
             elif a.lower() == 'strict':
                 a = '-DENABLE_STRICT=ON'
             elif a.lower() == 'nostrict':

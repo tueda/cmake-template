@@ -96,6 +96,15 @@ if(ENABLE_STRICT)
   endif()
 endif()
 
+# Native option.
+option(ENABLE_NATIVE "Use inative instruction sets on the build machine." ON)
+if(ENABLE_NATIVE)
+  try_cxx_compiler_flag("-march=native" CXX_HAS_NATIVE_FLAG)
+  if(NOT CXX_HAS_NATIVE_FLAG)
+    message(FATAL_ERROR "-march=native option not available")
+  endif()
+endif()
+
 # Debugging flags.
 if(CMAKE_BUILD_TYPE MATCHES Debug)
   try_cxx_compiler_flag("-Og" CXX_HAS_OPTDEBUG_FLAG)
