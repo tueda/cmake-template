@@ -4,6 +4,10 @@ link_libraries(foo_lib)
 # Doctest.
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/doctest/doctest)
 
+# Define the "check" target. Use "make check" instead of "make test"; the latter
+# is known not to update executables (cmake/cmake#8774).
+add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure)
+
 # Add a test.
 macro(do_test testname testfile)
   add_executable(${testname}.exe ${testfile})

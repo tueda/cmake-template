@@ -103,9 +103,6 @@ endif()
 
 # Enable tests.
 enable_testing()
-# Use "make check" instead of "make test"; the latter is known not to update
-# executables (cmake/cmake#8774).
-add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure)
 
 add_subdirectory(src)
 add_subdirectory(tests EXCLUDE_FROM_ALL)
