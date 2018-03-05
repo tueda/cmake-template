@@ -1,6 +1,7 @@
 include_directories(${CMAKE_SOURCE_DIR}/src)
 link_libraries(foo_lib)
 
+# Doctest.
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/doctest/doctest)
 
 # Add a test.

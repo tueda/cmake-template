@@ -8,6 +8,7 @@ __doc__ = """Bootstrap script."""
 
 import argparse
 import os
+import re
 import subprocess
 import sys
 
@@ -61,18 +62,44 @@ def set_default_subparser(self, name, args=None):
 argparse.ArgumentParser.set_default_subparser = set_default_subparser
 
 
-def run(args, verbose=False, ignore_error=False):
+def get_script_path():
+    """Return the path to the this script."""
+    return __file__
+
+
+def get_root_dir():
+    """Return the CMake/Git root directory."""
+    return os.path.dirname(__file__)
+
+
+def run(args, verbose=False, ignore_error=False, without_check=False,
+        return_output=False):
     """Run an external command."""
     if verbose:
         print('Running {0}'.format(' '.join(args)))
+        sys.stdout.flush()
     if ignore_error:
         with open(os.devnull, 'w') as devnull:
-            subprocess.call(args, stderr=devnull)
+            return subprocess.call(args, stderr=devnull)
+    elif without_check:
+        return subprocess.call(args)
     else:
         try:
-            subprocess.check_call(args)
+            if return_output:
+                return subprocess.check_output(args)
+            else:
+                subprocess.check_call(args)
         except subprocess.CalledProcessError:
             exit(1)
+        return 0
+
+
+def cmake_has_target(target):
+    """Return True if the current CMake build has the given target."""
+    output = run(['cmake', '--build', '.', '--target', 'help'],
+                 return_output=True)
+    return any(re.search(r'\b{0}\b'.format(re.escape(target)), l)
+               for l in output.splitlines())
 
 
 def command_init(args):
@@ -85,6 +112,10 @@ def command_init(args):
                 a = '-DCMAKE_BUILD_TYPE=Debug'
             elif a.lower() == 'release':
                 a = '-DCMAKE_BUILD_TYPE=Release'
+            elif a.lower() == 'strict':
+                a = '-DENABLE_STRICT=ON'
+            elif a.lower() == 'nostrict':
+                a = '-DENABLE_STRICT=OFF'
             elif a.startswith('gcc'):
                 a = [
                     '-DCMAKE_C_COMPILER={0}'.format(a),
@@ -106,14 +137,14 @@ def command_init(args):
         else:
             cmake_args.append(a)
 
-    cmake_src_dir = os.path.dirname(__file__)
+    root_dir = get_root_dir()
 
-    run(['git', '-C', cmake_src_dir, 'submodule', 'update', '--init'],
+    run(['git', '-C', root_dir, 'submodule', 'update', '--init'],
         verbose=args.verbose)
 
     if args.verbose:
         cmake_args.insert(0, '-L')
-    run(['cmake'] + cmake_args + [cmake_src_dir], verbose=args.verbose)
+    run(['cmake'] + cmake_args + [root_dir], verbose=args.verbose)
 
 
 def command_clean(args):
@@ -121,6 +152,57 @@ def command_clean(args):
     run(['git', 'submodule', 'deinit', '.'], verbose=args.verbose,
         ignore_error=True)
     run(['git', 'clean', '-dfX'], verbose=args.verbose)
+
+
+def command_ci_lint(args):
+    """Run linters for CI."""
+    # Assume the repository has no changes. Run clang-format and then check
+    # git diff.
+    root_dir = get_root_dir()
+    target_files = []
+    for root, dirs, files in os.walk(root_dir):
+        dirs[:] = [d for d in dirs if not re.match(
+            r'CMakeFiles', d)]
+        files = [f for f in files if re.match(
+            r'.*\.(?:c|C|c\+\+|cc|cpp|cxx|h|hh|h\+\+|hpp|hxx)$', f)]
+        target_files.extend([os.path.join(root, f) for f in files])
+    for f in target_files:
+        run(['clang-format', '-i', f], verbose=args.verbose)
+    status = run(['git', '-C', root_dir, 'diff', '--exit-code'],
+                 verbose=args.verbose, without_check=True)
+    if status != 0:
+        exit(status)
+
+
+def command_ci_test(args):
+    """Run tests for CI."""
+    script_path = get_script_path()
+    verbose_opt = ['-v'] if args.verbose else []
+
+    run(['python', script_path, 'clean'] + verbose_opt, verbose=args.verbose)
+
+    run(['python', script_path, 'init', 'strict', 'debug'] + args.args +
+        verbose_opt, verbose=args.verbose)
+    run(['cmake', '--build', '.', '--target', 'all'], verbose=args.verbose)
+    if cmake_has_target('check'):
+        run(['cmake', '--build', '.', '--target', 'check'],
+            verbose=args.verbose)
+
+    run(['python', script_path, 'init', 'strict', 'release'] + args.args +
+        verbose_opt, verbose=args.verbose)
+    run(['cmake', '--build', '.', '--target', 'all'], verbose=args.verbose)
+    if cmake_has_target('check'):
+        run(['cmake', '--build', '.', '--target', 'check'],
+            verbose=args.verbose)
+    if cmake_has_target('build_bench'):
+        run(['cmake', '--build', '.', '--target', 'build_bench'],
+            verbose=args.verbose)
+
+    if cmake_has_target('install'):
+        run(['python', script_path, 'init', 'strict', 'release',
+            'test-install'] + args.args + verbose_opt, verbose=args.verbose)
+        run(['cmake', '--build', '.', '--target', 'install'],
+            verbose=args.verbose)
 
 
 def main():
@@ -153,6 +235,33 @@ def main():
         '-v', '--verbose',
         action='store_true',
         help='verbose output',
+    )
+
+    parser_ci_lint = subparsers.add_parser(
+        'ci-lint',
+        help='run liners for CI'
+    )
+    parser_ci_lint.set_defaults(handler=command_ci_lint)
+    parser_ci_lint.add_argument(
+        '-v', '--verbose',
+        action='store_true',
+        help='verbose output',
+    )
+
+    parser_ci_test = subparsers.add_parser(
+        'ci-test',
+        help='run tests for CI'
+    )
+    parser_ci_test.set_defaults(handler=command_ci_test)
+    parser_ci_test.add_argument(
+        '-v', '--verbose',
+        action='store_true',
+        help='verbose output',
+    )
+    parser_ci_test.add_argument(
+        'args',
+        nargs='*',
+        help=argparse.SUPPRESS,
     )
 
     parser.set_default_subparser('init')

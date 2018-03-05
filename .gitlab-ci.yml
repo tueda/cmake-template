@@ -1,0 +1,70 @@
+test-lint:
+  image: ubuntu:bionic
+  before_script:
+    - apt-get update -qq
+    - apt-get install -y -qq clang-format-6.0 git python
+    - ln -s /usr/bin/clang-format-6.0 /usr/bin/clang-format
+  script:
+    - ./bootstrap.py ci-lint -v
+
+test-gcc:
+  image: ubuntu:xenial
+  before_script:
+    - apt-get update -qq
+    - apt-get install -y -qq cmake g++ git python
+  script:
+    - ./bootstrap.py ci-test gcc -v
+
+test-gcc-6:
+  image: ubuntu:xenial
+  before_script:
+    - apt-get update -qq
+    - apt-get install software-properties-common -y -qq
+    - add-apt-repository ppa:ubuntu-toolchain-r/test
+    - apt-get update -qq
+    - apt-get install -y -qq cmake g++-6 git python
+  script:
+    - ./bootstrap.py ci-test gcc-6 -v
+
+test-gcc-7:
+  image: ubuntu:xenial
+  before_script:
+    - apt-get update -qq
+    - apt-get install software-properties-common -y -qq
+    - add-apt-repository ppa:ubuntu-toolchain-r/test
+    - apt-get update -qq
+    - apt-get install -y -qq cmake g++-7 git python
+  script:
+    - ./bootstrap.py ci-test gcc-7 -v
+
+test-clang:
+  image: ubuntu:xenial
+  before_script:
+    - apt-get update -qq
+    - apt-get install -y -qq clang cmake git python
+  script:
+    - ./bootstrap.py ci-test clang -v
+
+test-clang-3.9:
+  image: ubuntu:xenial
+  before_script:
+    - apt-get update -qq
+    - apt-get install -y -qq clang-3.9 cmake git python
+  script:
+    - ./bootstrap.py ci-test clang-3.9 -v
+
+test-clang-4.0:
+  image: ubuntu:xenial
+  before_script:
+    - apt-get update -qq
+    - apt-get install -y -qq clang-4.0 cmake git python
+  script:
+    - ./bootstrap.py ci-test clang-4.0 -v
+
+test-clang-5.0:
+  image: ubuntu:xenial
+  before_script:
+    - apt-get update -qq
+    - apt-get install -y -qq clang-5.0 cmake git python
+  script:
+    - ./bootstrap.py ci-test clang-5.0 -v
