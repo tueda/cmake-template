@@ -226,8 +226,9 @@ def command_ci_test(args):
     if cmake_has_target('check'):
         run(['cmake', '--build', '.', '--target', 'check'],
             verbose=args.verbose)
-    if cmake_has_target('build_bench'):
-        run(['cmake', '--build', '.', '--target', 'build_bench'],
+    if cmake_has_target('bench'):
+        # We don't perform benchmarks on CI, but ensure they can be built.
+        run(['cmake', '--build', 'benchmarks'],
             verbose=args.verbose)
 
     if cmake_has_target('install'):

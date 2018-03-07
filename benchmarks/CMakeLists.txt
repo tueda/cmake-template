@@ -43,13 +43,12 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 endif()
 
 # Custom targets for benchmarking.
-add_custom_target(build_bench)
-add_custom_target(bench DEPENDS build_bench)
+add_custom_target(bench)
 
 # Add a bench.
 macro(do_bench benchname benchfile)
   add_executable(${benchname}.exe ${benchfile} stamp-h1.out)
-  add_dependencies(build_bench ${benchname}.exe)
+  add_dependencies(bench ${benchname}.exe)
   add_custom_command(TARGET bench POST_BUILD
                      COMMAND $<TARGET_FILE:${benchname}.exe>)
 endmacro()
