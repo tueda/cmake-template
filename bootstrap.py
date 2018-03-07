@@ -120,6 +120,10 @@ def command_init(args):
                 a = '-DENABLE_STRICT=ON'
             elif a.lower() == 'nostrict':
                 a = '-DENABLE_STRICT=OFF'
+            elif a.lower() == 'sanitize':
+                a = '-DENABLE_SANITIZER=ON'
+            elif a.lower() == 'nosanitize':
+                a = '-DENABLE_SANITIZER=OFF'
             elif a.startswith('gcc'):
                 a = [
                     '-DCMAKE_C_COMPILER={0}'.format(a),

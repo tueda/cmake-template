@@ -105,6 +105,21 @@ if(ENABLE_NATIVE)
   endif()
 endif()
 
+# Sanitizer.
+option(ENABLE_SANITIZER "Build with sanitizer." OFF)
+if(ENABLE_SANITIZER)
+  # NOTE: -fno-sanitize-recover=all is needed to make test programs return
+  # non-zero exit code for undefined behaviours.
+  set(CMAKE_REQUIRED_FLAGS
+      "-fsanitize=address,undefined -fno-sanitize-recover=all")
+  try_cxx_compiler_flag("-fsanitize=address,undefined -fno-sanitize-recover=all"
+                        CXX_HAS_SANITIZE_FLAG)
+  unset(CMAKE_REQUIRED_FLAGS)
+  if(NOT CXX_HAS_SANITIZE_FLAG)
+    message(FATAL_ERROR "sanitizer option not available")
+  endif()
+endif()
+
 # Debugging flags.
 if(CMAKE_BUILD_TYPE MATCHES Debug)
   try_cxx_compiler_flag("-Og" CXX_HAS_OPTDEBUG_FLAG)
