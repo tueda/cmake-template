@@ -78,7 +78,7 @@ test-clang-5.0:
   script:
     - ./bootstrap.py ci-test clang-5.0 -v
 
-test-gcc-sanitizer:
+test-gcc-sanitize:
   image: ubuntu:bionic
   before_script:
     - apt-get update -qq
@@ -86,8 +86,8 @@ test-gcc-sanitizer:
   script:
     - ./bootstrap.py ci-test gcc sanitize -v
 
-test-clang-sanitizer:
-  image: ubuntu:xenial
+test-clang-sanitize:
+  image: ubuntu:bionic
   before_script:
     - apt-get update -qq
     - apt-get install -y -qq clang cmake git python
