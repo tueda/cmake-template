@@ -115,8 +115,22 @@ if(ENABLE_SANITIZER)
   try_cxx_compiler_flag("-fsanitize=address,undefined -fno-sanitize-recover=all"
                         CXX_HAS_SANITIZE_FLAG)
   unset(CMAKE_REQUIRED_FLAGS)
+
   if(NOT CXX_HAS_SANITIZE_FLAG)
-    message(FATAL_ERROR "sanitizer option not available")
+    # GCC on Trusty needs explicit -fuse-ld=gold.
+    # https://stackoverflow.com/a/42141358/9105334
+    set(CMAKE_REQUIRED_FLAGS
+        "-fsanitize=address,undefined -fno-sanitize-recover=all -fuse-ld=gold")
+    try_cxx_compiler_flag(
+      "-fsanitize=address,undefined -fno-sanitize-recover=all"
+      CXX_HAS_SANITIZE_FLAG_TRUSTY_WORKAROUND)
+    unset(CMAKE_REQUIRED_FLAGS)
+
+    if(NOT CXX_HAS_SANITIZE_FLAG_TRUSTY_WORKAROUND)
+      message(FATAL_ERROR "sanitizer option not available")
+    endif()
+
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fuse-ld=gold")
   endif()
 endif()
 

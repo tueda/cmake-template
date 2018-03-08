@@ -179,11 +179,18 @@ def command_ci_lint(args):
     if not subcommands:
         subcommands.append('cpp')
 
+    script_path = get_script_path()
+    verbose_opt = ['-v'] if args.verbose else []
+    run(['python', script_path, 'clean'] + verbose_opt, verbose=args.verbose)
+
     for cmd in subcommands:
         globals()['_command_ci_lint_' + cmd](args)
 
 
 def _command_ci_lint_cpp(args):
+    if args.verbose:
+        run(['clang-format', '--version'], verbose=args.verbose)
+
     # Assume the repository has no changes. Run clang-format and then check
     # git diff.
     root_dir = get_root_dir()
@@ -203,6 +210,9 @@ def _command_ci_lint_cpp(args):
 
 
 def _command_ci_lint_python(args):
+    if args.verbose:
+        run(['flake8', '--version'], verbose=args.verbose)
+
     run(['flake8'], verbose=args.verbose)
 
 

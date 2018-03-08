@@ -1,6 +1,9 @@
 cmake-template
 ==============
 
+[![Build Status](https://travis-ci.org/tueda/cmake-template.svg?branch=master)](https://travis-ci.org/tueda/cmake-template)
+[![pipeline status](https://gitlab.com/tueda/cmake-template/badges/master/pipeline.svg)](https://gitlab.com/tueda/cmake-template/commits/master)
+
 A [CMake](https://cmake.org/) template with
 [doctest](https://github.com/onqtam/doctest) and
 [Google Benchmark](https://github.com/google/benchmark).
@@ -29,7 +32,7 @@ Arguable default values you might want to look into:
 - Compiler warning flags ([`CMakeLists.txt`](CMakeLists.txt))
 - `ENABLE_NATIVE=ON` ([`CMakeLists.txt`](CMakeLists.txt))
 - Coding conventions: Google ([`.clang-format`](.clang-format))
-- Continuous integration ([`.gitlab-ci.yml`](.gitlab-ci.yml))
+- Continuous integration ([`.travis.yml`](.travis.yml), [`.gitlab-ci.yml`](.gitlab-ci.yml))
 
 
 Build
