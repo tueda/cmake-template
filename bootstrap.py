@@ -62,6 +62,14 @@ def set_default_subparser(self, name, args=None):
 argparse.ArgumentParser.set_default_subparser = set_default_subparser
 
 
+def get_python_path():
+    """Return the path to Python."""
+    path = sys.executable  # maybe python2 or python3
+    if not path:
+        path = 'python'
+    return path
+
+
 def get_script_path():
     """Return the path to the this script."""
     return __file__
@@ -179,9 +187,11 @@ def command_ci_lint(args):
     if not subcommands:
         subcommands.append('cpp')
 
+    python_path = get_python_path()
     script_path = get_script_path()
     verbose_opt = ['-v'] if args.verbose else []
-    run(['python', script_path, 'clean'] + verbose_opt, verbose=args.verbose)
+    run([python_path, script_path, 'clean'] + verbose_opt,
+        verbose=args.verbose)
 
     for cmd in subcommands:
         globals()['_command_ci_lint_' + cmd](args)
@@ -218,19 +228,21 @@ def _command_ci_lint_python(args):
 
 def command_ci_test(args):
     """Run tests for CI."""
+    python_path = get_python_path()
     script_path = get_script_path()
     verbose_opt = ['-v'] if args.verbose else []
 
-    run(['python', script_path, 'clean'] + verbose_opt, verbose=args.verbose)
+    run([python_path, script_path, 'clean'] + verbose_opt,
+        verbose=args.verbose)
 
-    run(['python', script_path, 'init', 'strict', 'debug'] + args.args +
+    run([python_path, script_path, 'init', 'strict', 'debug'] + args.args +
         verbose_opt, verbose=args.verbose)
     run(['cmake', '--build', '.', '--target', 'all'], verbose=args.verbose)
     if cmake_has_target('check'):
         run(['cmake', '--build', '.', '--target', 'check'],
             verbose=args.verbose)
 
-    run(['python', script_path, 'init', 'strict', 'release'] + args.args +
+    run([python_path, script_path, 'init', 'strict', 'release'] + args.args +
         verbose_opt, verbose=args.verbose)
     run(['cmake', '--build', '.', '--target', 'all'], verbose=args.verbose)
     if cmake_has_target('check'):
@@ -242,8 +254,8 @@ def command_ci_test(args):
             verbose=args.verbose)
 
     if cmake_has_target('install'):
-        run(['python', script_path, 'init', 'strict', 'release',
-            'test-install'] + args.args + verbose_opt, verbose=args.verbose)
+        run([python_path, script_path, 'init', 'strict', 'release',
+             'test-install'] + args.args + verbose_opt, verbose=args.verbose)
         run(['cmake', '--build', '.', '--target', 'install'],
             verbose=args.verbose)
 
