@@ -79,29 +79,52 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
   endif()
 elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_cxx_compiler_flag(-Weverything)
-  add_cxx_compiler_flag(-Wno-c++98-compat-pedantic)
   add_cxx_compiler_flag(-pedantic)
+  add_cxx_compiler_flag(-Wno-c++98-compat-pedantic)
+elseif(MSVC)
+  add_cxx_compiler_flag(/std:c++latest)
+  add_cxx_compiler_flag(/Wall)
+  add_cxx_compiler_flag(/permissive-)
+  add_cxx_compiler_flag(/wd4514)  # unreferenced inline function has been removed
+  add_cxx_compiler_flag(/wd4571)  # structured exceptions (SEH) are no longer caught
+  add_cxx_compiler_flag(/wd4710)  # function not inlined
+
+  add_cxx_compiler_flag(/wd4365)  # conversion from 'X' to 'Y', signed/unsigned mismatch
+  add_cxx_compiler_flag(/wd4774)  # format string expected in argument N is not a string literal
+  add_cxx_compiler_flag(/wd4820)  # 'N' bytes padding added after data member
+  add_cxx_compiler_flag(/wd4625)  # copy constructor was implicitly defined as deleted
+  add_cxx_compiler_flag(/wd4626)  # assignment operator was implicitly defined as deleted
+  add_cxx_compiler_flag(/wd5026)  # move constructor was implicitly defined as deleted
+  add_cxx_compiler_flag(/wd5027)  # move assignment operator was implicitly defined as deleted
 endif()
 
 # Strict mode.
 option(ENABLE_STRICT "Turn compiler warnings into errors." OFF)
 if(ENABLE_STRICT)
-  try_cxx_compiler_flag("-Werror" CXX_HAS_ERROR_FLAG)
-  if(NOT CXX_HAS_ERROR_FLAG)
-    message(FATAL_ERROR "-Werror option not available")
-  endif()
-  try_cxx_compiler_flag("-pedantic-errors" CXX_HAS_PEDANTIC_ERRORS_FLAG)
-  if(NOT CXX_HAS_PEDANTIC_ERRORS_FLAG)
-    message(FATAL_ERROR "-pedantic-errors option not available")
+  if(MSVC)
+    add_cxx_compiler_flag(/WX)
+  else()
+    try_cxx_compiler_flag("-Werror" CXX_HAS_ERROR_FLAG)
+    if(NOT CXX_HAS_ERROR_FLAG)
+      message(FATAL_ERROR "-Werror option not available")
+    endif()
+    try_cxx_compiler_flag("-pedantic-errors" CXX_HAS_PEDANTIC_ERRORS_FLAG)
+    if(NOT CXX_HAS_PEDANTIC_ERRORS_FLAG)
+      message(FATAL_ERROR "-pedantic-errors option not available")
+    endif()
   endif()
 endif()
 
 # Native option.
 option(ENABLE_NATIVE "Use inative instruction sets on the build machine." ON)
 if(ENABLE_NATIVE)
-  try_cxx_compiler_flag("-march=native" CXX_HAS_NATIVE_FLAG)
-  if(NOT CXX_HAS_NATIVE_FLAG)
-    message(FATAL_ERROR "-march=native option not available")
+  if(MSVC)
+    # Nothing.
+  else()
+    try_cxx_compiler_flag("-march=native" CXX_HAS_NATIVE_FLAG)
+    if(NOT CXX_HAS_NATIVE_FLAG)
+      message(FATAL_ERROR "-march=native option not available")
+    endif()
   endif()
 endif()
 
@@ -136,7 +159,11 @@ endif()
 
 # Debugging flags.
 if(CMAKE_BUILD_TYPE MATCHES Debug)
-  try_cxx_compiler_flag("-Og" CXX_HAS_OPTDEBUG_FLAG)
+  if(MSVC)
+    # Nothing.
+  else()
+    try_cxx_compiler_flag("-Og" CXX_HAS_OPTDEBUG_FLAG)
+  endif()
 endif()
 
 # Enable tests.
