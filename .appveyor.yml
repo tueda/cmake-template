@@ -12,8 +12,8 @@ before_build:
 
 build:
   project: foo.sln
-  verbosity: detailed
+# verbosity: detailed
 
 before_test:
   - cmake --build . --target check
-  - cmake --build . --target bench
+# - cmake --build . --target bench
