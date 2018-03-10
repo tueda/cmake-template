@@ -15,5 +15,7 @@ build:
 # verbosity: detailed
 
 before_test:
-  - cmake --build . --target check
+  - msbuild /help
+  - msbuild foo.sln /target:check
+# - cmake --build . --target check
 # - cmake --build . --target bench
