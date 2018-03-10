@@ -15,5 +15,5 @@ build:
   verbosity: detailed
 
 before_test:
-  - cmake --build tests
-  - cmake --build benchmarks
+  - cmake --build . --target check
+  - cmake --build . --target bench
