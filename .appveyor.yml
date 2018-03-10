@@ -1,0 +1,15 @@
+configuration:
+  - Debug
+# - Release
+
+environment:
+  matrix:
+    - generator: "Visual Studio 15 2017 Win64"
+      APPVEYOR_BUILD_WORKER_IMAGE: "Visual Studio 2017"
+
+before_build:
+  - python bootstrap.py -- -G "%generator%" strict
+
+build:
+  project: foo.sln
+  verbosity: detailed
