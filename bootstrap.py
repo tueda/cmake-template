@@ -114,7 +114,14 @@ def command_init(args):
     """Initialize the build."""
     cmake_args = []
 
+    pass_next_args = 0
+
     for a in args.args:
+        if pass_next_args > 0:
+            cmake_args.append(a)
+            pass_next_args -= 1
+            continue
+
         if not a.startswith('-'):
             if a.lower() == 'debug':
                 a = '-DCMAKE_BUILD_TYPE=Debug'
@@ -147,6 +154,9 @@ def command_init(args):
                     os.path.join(os.getcwd(), '_test_install_prefix'))
             else:
                 args.error('unknown keyword: {0}'.format(a))
+        else:
+            if a == '-G' or a == '-T' or a == '-A':
+                pass_next_args = 1
 
         if isinstance(a, list):
             cmake_args.extend(a)
