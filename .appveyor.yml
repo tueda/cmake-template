@@ -8,8 +8,12 @@ environment:
       APPVEYOR_BUILD_WORKER_IMAGE: "Visual Studio 2017"
 
 before_build:
-  - python bootstrap.py -- -G "%generator%" strict
+  - python bootstrap.py -v -- -G "%generator%" strict
 
 build:
   project: foo.sln
   verbosity: detailed
+
+before_test:
+  - cmake --build tests
+  - cmake --build benchmarks
